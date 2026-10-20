@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import fnmatch
+import os
 import re
 import time
 from pathlib import Path
@@ -152,3 +153,18 @@ def print_failures(rows: list[dict], log=print, limit: int = 40) -> None:
             log(f"      repro: {r['repro']}")
     if len(rows) > limit:
         log(f"  ... {len(rows) - limit} more in report.md")
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        _github_annotations(rows, log)
+
+
+def _github_annotations(rows: list[dict], log) -> None:
+    """One ::error annotation per failure signature (GitHub shows at most 10 per step)."""
+    groups: dict[tuple, list[dict]] = {}
+    for r in rows:
+        groups.setdefault((r["op"], r["backend"], r["dtype"], r["quant"], r["category"]), []).append(r)
+    for (op, backend, dtype, quant, category), rs in list(groups.items())[:10]:
+        r = rs[0]
+        msg = (f"{len(rs)} case(s); e.g. {r['label']} dist={r['dist']}: {(r.get('detail') or '')[:400]}"
+               f" | triage: {r.get('triage') or '-'} | minimized: {r.get('minimized_label') or '-'}")
+        msg = msg.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+        log(f"::error title=NeuralProbe {op} on {backend} [{dtype} {quant}] {category}::{msg}")
