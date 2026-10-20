@@ -1,4 +1,4 @@
-# NeuralProbe — AI Backend Validation, Fuzzing & Operator Optimization
+# NeuralProbe: AI Backend Validation, Fuzzing & Operator Optimization
 
 **C++ · Python · PyTorch · ONNX Runtime · QNN · GoogleTest · ARM NEON · Linux · Bash · GitHub Actions**
 
