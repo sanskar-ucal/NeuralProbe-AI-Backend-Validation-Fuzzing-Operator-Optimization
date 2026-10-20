@@ -1,0 +1,1050 @@
+{
+  "threads": 1,
+  "results": [
+    {
+      "key": "matmul [64x64 @ 64x64] float32",
+      "op": "matmul",
+      "dtype": "float32",
+      "quant": "none",
+      "params": {
+        "batch": [],
+        "M": 64,
+        "K": 64,
+        "N": 64,
+        "b_batched": false
+      },
+      "flops": 524288.0,
+      "backends": {
+        "torch": {
+          "median_us": 3.041,
+          "p90_us": 3.4248000000000007,
+          "std_us": 2.940906669689166,
+          "samples": 75,
+          "gflops": 172.4064452482736,
+          "correct": true,
+          "vs_best": 1.0
+        },
+        "ort-cpu": {
+          "median_us": 4.0,
+          "p90_us": 4.417,
+          "std_us": 0.2977981795332761,
+          "samples": 75,
+          "gflops": 131.072,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 3.6842105263157894,
+            "kernel_us": 2.4,
+            "overhead_pct": 34.85714285714286,
+            "top_kernels": [
+              {
+                "kernel": "MatMul@CPUExecutionProvider",
+                "us": 2.4
+              }
+            ]
+          },
+          "vs_best": 1.3153567905294312
+        },
+        "ort-coreml": {
+          "median_us": 27.333,
+          "p90_us": 38.53320000000002,
+          "std_us": 11.787183770361207,
+          "samples": 75,
+          "gflops": 19.18150221344163,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 37.05263157894737,
+            "kernel_us": 40.35,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "9451974527214893594_CoreML_9451974527214893594_0@CoreMLExecutionProvider",
+                "us": 40.35
+              }
+            ]
+          },
+          "vs_best": 8.988161788885234
+        },
+        "native-ref": {
+          "median_us": 85.792,
+          "p90_us": 93.90020000000001,
+          "std_us": 4.736972905812318,
+          "samples": 75,
+          "gflops": 6.111152555016785,
+          "correct": true,
+          "vs_best": 28.21177244327524
+        },
+        "native-opt": {
+          "median_us": 6.917,
+          "p90_us": 7.2746,
+          "std_us": 0.6576474832816338,
+          "samples": 75,
+          "gflops": 75.79702183027324,
+          "correct": true,
+          "vs_best": 2.2745807300230187
+        }
+      },
+      "analysis": {
+        "fastest": "torch",
+        "findings": [
+          "ort-cpu: 35% of run time is session/dispatch overhead (kernel 2.4us of 3.7us) -> overhead-bound",
+          "ort-coreml is 9.0x slower than torch",
+          "native-opt is 2.3x slower than torch",
+          "native-opt speedup over native-ref: 12.4x"
+        ]
+      }
+    },
+    {
+      "key": "matmul [256x256 @ 256x256] float32",
+      "op": "matmul",
+      "dtype": "float32",
+      "quant": "none",
+      "params": {
+        "batch": [],
+        "M": 256,
+        "K": 256,
+        "N": 256,
+        "b_batched": false
+      },
+      "flops": 33554432.0,
+      "backends": {
+        "torch": {
+          "median_us": 27.042,
+          "p90_us": 27.583,
+          "std_us": 0.8727495286354117,
+          "samples": 75,
+          "gflops": 1240.8265660823904,
+          "correct": true,
+          "vs_best": 1.0
+        },
+        "ort-cpu": {
+          "median_us": 28.167,
+          "p90_us": 29.125,
+          "std_us": 1.6369879557555973,
+          "samples": 75,
+          "gflops": 1191.2675116270814,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 27.42105263157895,
+            "kernel_us": 26.9,
+            "overhead_pct": 1.9001919385796644,
+            "top_kernels": [
+              {
+                "kernel": "MatMul@CPUExecutionProvider",
+                "us": 26.9
+              }
+            ]
+          },
+          "vs_best": 1.041601952518305
+        },
+        "ort-coreml": {
+          "median_us": 53.875,
+          "p90_us": 57.0252,
+          "std_us": 10.905974979322115,
+          "samples": 75,
+          "gflops": 622.8200835266821,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 55.473684210526315,
+            "kernel_us": 60.85,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "9451974527214893594_CoreML_9451974527214893594_0@CoreMLExecutionProvider",
+                "us": 60.85
+              }
+            ]
+          },
+          "vs_best": 1.9922712817099326
+        },
+        "native-ref": {
+          "median_us": 9993.5,
+          "p90_us": 11170.833600000002,
+          "std_us": 484.86207891675036,
+          "samples": 75,
+          "gflops": 3.35762565667684,
+          "correct": true,
+          "vs_best": 369.55476665927074
+        },
+        "native-opt": {
+          "median_us": 303.375,
+          "p90_us": 337.5498,
+          "std_us": 20.09841716644926,
+          "samples": 75,
+          "gflops": 110.6038137618459,
+          "correct": true,
+          "vs_best": 11.21865986243621
+        }
+      },
+      "analysis": {
+        "fastest": "torch",
+        "findings": [
+          "native-opt is 11.2x slower than torch",
+          "native-opt speedup over native-ref: 32.9x"
+        ]
+      }
+    },
+    {
+      "key": "matmul [1x768 @ 768x768] float32",
+      "op": "matmul",
+      "dtype": "float32",
+      "quant": "none",
+      "params": {
+        "batch": [],
+        "M": 1,
+        "K": 768,
+        "N": 768,
+        "b_batched": false
+      },
+      "flops": 1179648.0,
+      "backends": {
+        "torch": {
+          "median_us": 5.5,
+          "p90_us": 5.9416,
+          "std_us": 0.27485067428615767,
+          "samples": 75,
+          "gflops": 214.48145454545454,
+          "correct": true,
+          "vs_best": 1.0
+        },
+        "ort-cpu": {
+          "median_us": 7.0,
+          "p90_us": 10.417,
+          "std_us": 2.3869433119368377,
+          "samples": 75,
+          "gflops": 168.52114285714285,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 7.105263157894737,
+            "kernel_us": 5.75,
+            "overhead_pct": 19.07407407407408,
+            "top_kernels": [
+              {
+                "kernel": "MatMul@CPUExecutionProvider",
+                "us": 5.75
+              }
+            ]
+          },
+          "vs_best": 1.2727272727272727
+        },
+        "ort-coreml": {
+          "median_us": 27.958,
+          "p90_us": 31.725400000000004,
+          "std_us": 7.946847765788786,
+          "samples": 75,
+          "gflops": 42.19357607840332,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 37.0,
+            "kernel_us": 46.65,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "9451974527214893594_CoreML_9451974527214893594_0@CoreMLExecutionProvider",
+                "us": 46.65
+              }
+            ]
+          },
+          "vs_best": 5.083272727272727
+        },
+        "native-ref": {
+          "median_us": 476.834,
+          "p90_us": 520.8998,
+          "std_us": 28.79673599945352,
+          "samples": 75,
+          "gflops": 2.473917547825868,
+          "correct": true,
+          "vs_best": 86.6970909090909
+        },
+        "native-opt": {
+          "median_us": 34.75,
+          "p90_us": 41.916,
+          "std_us": 5.300160153454485,
+          "samples": 75,
+          "gflops": 33.94670503597122,
+          "correct": true,
+          "vs_best": 6.318181818181818
+        }
+      },
+      "analysis": {
+        "fastest": "torch",
+        "findings": [
+          "ort-coreml is 5.1x slower than torch",
+          "native-opt is 6.3x slower than torch",
+          "native-opt speedup over native-ref: 13.7x"
+        ]
+      }
+    },
+    {
+      "key": "matmul [128x768 @ 768x768] float32",
+      "op": "matmul",
+      "dtype": "float32",
+      "quant": "none",
+      "params": {
+        "batch": [],
+        "M": 128,
+        "K": 768,
+        "N": 768,
+        "b_batched": false
+      },
+      "flops": 150994944.0,
+      "backends": {
+        "torch": {
+          "median_us": 84.0,
+          "p90_us": 95.96640000000001,
+          "std_us": 25.72108883137121,
+          "samples": 75,
+          "gflops": 1797.558857142857,
+          "correct": true,
+          "vs_best": 1.0
+        },
+        "ort-cpu": {
+          "median_us": 85.583,
+          "p90_us": 93.3746,
+          "std_us": 4.4769065288731085,
+          "samples": 75,
+          "gflops": 1764.3100148393958,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 86.84210526315789,
+            "kernel_us": 86.9,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "MatMul@CPUExecutionProvider",
+                "us": 86.9
+              }
+            ]
+          },
+          "vs_best": 1.018845238095238
+        },
+        "ort-coreml": {
+          "median_us": 116.167,
+          "p90_us": 133.66660000000002,
+          "std_us": 13.260060442858723,
+          "samples": 75,
+          "gflops": 1299.809274578839,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 127.6842105263158,
+            "kernel_us": 141.4,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "9451974527214893594_CoreML_9451974527214893594_0@CoreMLExecutionProvider",
+                "us": 141.4
+              }
+            ]
+          },
+          "vs_best": 1.3829404761904762
+        },
+        "native-ref": {
+          "median_us": 60663.083,
+          "p90_us": 66829.675,
+          "std_us": 9514.815894875288,
+          "samples": 75,
+          "gflops": 2.4890746815489084,
+          "correct": true,
+          "vs_best": 722.1795595238095
+        },
+        "native-opt": {
+          "median_us": 1423.542,
+          "p90_us": 1906.5088,
+          "std_us": 226.0067923834912,
+          "samples": 75,
+          "gflops": 106.06989045634059,
+          "correct": true,
+          "vs_best": 16.946928571428572
+        }
+      },
+      "analysis": {
+        "fastest": "torch",
+        "findings": [
+          "native-opt is 16.9x slower than torch",
+          "native-opt speedup over native-ref: 42.6x"
+        ]
+      }
+    },
+    {
+      "key": "matmul [128x768 @ 768x768] float32 int8_qdq",
+      "op": "matmul",
+      "dtype": "float32",
+      "quant": "int8_qdq",
+      "params": {
+        "batch": [],
+        "M": 128,
+        "K": 768,
+        "N": 768,
+        "b_batched": false
+      },
+      "flops": 150994944.0,
+      "backends": {
+        "ort-cpu": {
+          "median_us": 349.708,
+          "p90_us": 469.7246,
+          "std_us": 117.07277569019746,
+          "samples": 75,
+          "gflops": 431.7743488853558,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 412.10526315789474,
+            "kernel_us": 402.2,
+            "overhead_pct": 2.40357598978289,
+            "top_kernels": [
+              {
+                "kernel": "QLinearMatMul@CPUExecutionProvider",
+                "us": 377.8
+              },
+              {
+                "kernel": "QuantizeLinear@CPUExecutionProvider",
+                "us": 13.9
+              },
+              {
+                "kernel": "DequantizeLinear@CPUExecutionProvider",
+                "us": 10.5
+              }
+            ]
+          },
+          "vs_best": 1.0
+        },
+        "ort-coreml": {
+          "status": "UNSUPPORTED",
+          "detail": "[ONNXRuntimeError] : 1 : FAIL : This session contains graph nodes that are assigned to the default CPU EP, but fallback to CPU EP has been explicitly disabled by the user."
+        }
+      },
+      "analysis": {
+        "fastest": "ort-cpu",
+        "findings": []
+      }
+    },
+    {
+      "key": "depthwise_conv2d [N1 C32 112x112 k3x3 s[1, 1] d[1, 1] p[1, 1, 1, 1]] float32",
+      "op": "depthwise_conv2d",
+      "dtype": "float32",
+      "quant": "none",
+      "params": {
+        "N": 1,
+        "C": 32,
+        "H": 112,
+        "W": 112,
+        "KH": 3,
+        "KW": 3,
+        "stride": [
+          1,
+          1
+        ],
+        "dilation": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "bias": true
+      },
+      "flops": 7225344.0,
+      "backends": {
+        "torch": {
+          "median_us": 665.042,
+          "p90_us": 1046.7662,
+          "std_us": 165.0957019018161,
+          "samples": 75,
+          "gflops": 10.864492768877755,
+          "correct": true,
+          "vs_best": 5.1437211892460475
+        },
+        "ort-cpu": {
+          "median_us": 141.833,
+          "p90_us": 268.0086000000002,
+          "std_us": 80.15296574443865,
+          "samples": 75,
+          "gflops": 50.942615611317535,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 183.94736842105263,
+            "kernel_us": 184.4,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "Conv@CPUExecutionProvider",
+                "us": 184.4
+              }
+            ]
+          },
+          "vs_best": 1.0969974940444884
+        },
+        "ort-coreml": {
+          "median_us": 242.5,
+          "p90_us": 352.7668000000003,
+          "std_us": 116.9880118150794,
+          "samples": 75,
+          "gflops": 29.79523298969072,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 292.4736842105263,
+            "kernel_us": 304.6,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "8055057627823776084_CoreML_8055057627823776084_0@CoreMLExecutionProvider",
+                "us": 304.6
+              }
+            ]
+          },
+          "vs_best": 1.8755994183708196
+        },
+        "native-ref": {
+          "median_us": 1891.291,
+          "p90_us": 2318.2164000000007,
+          "std_us": 204.4538286575427,
+          "samples": 75,
+          "gflops": 3.8203237894115714,
+          "correct": true,
+          "vs_best": 14.628058967298827
+        },
+        "native-opt": {
+          "median_us": 129.292,
+          "p90_us": 154.36640000000003,
+          "std_us": 47.18249837578148,
+          "samples": 75,
+          "gflops": 55.88392166568697,
+          "correct": true,
+          "vs_best": 1.0
+        }
+      },
+      "analysis": {
+        "fastest": "native-opt",
+        "findings": [
+          "torch is 5.1x slower than native-opt",
+          "native-opt speedup over native-ref: 14.6x"
+        ]
+      }
+    },
+    {
+      "key": "depthwise_conv2d [N1 C144 56x56 k3x3 s[2, 2] d[1, 1] p[1, 1, 1, 1]] float32",
+      "op": "depthwise_conv2d",
+      "dtype": "float32",
+      "quant": "none",
+      "params": {
+        "N": 1,
+        "C": 144,
+        "H": 56,
+        "W": 56,
+        "KH": 3,
+        "KW": 3,
+        "stride": [
+          2,
+          2
+        ],
+        "dilation": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "bias": true
+      },
+      "flops": 2032128.0,
+      "backends": {
+        "torch": {
+          "median_us": 1542.833,
+          "p90_us": 2138.8334000000004,
+          "std_us": 309.0700488925042,
+          "samples": 75,
+          "gflops": 1.3171406108114099,
+          "correct": true,
+          "vs_best": 11.898424425644151
+        },
+        "ort-cpu": {
+          "median_us": 343.333,
+          "p90_us": 414.90000000000003,
+          "std_us": 94.77735764210917,
+          "samples": 75,
+          "gflops": 5.918825163907926,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 365.3157894736842,
+            "kernel_us": 364.35,
+            "overhead_pct": 0.2643711280795237,
+            "top_kernels": [
+              {
+                "kernel": "Conv@CPUExecutionProvider",
+                "us": 364.35
+              }
+            ]
+          },
+          "vs_best": 2.6478055326335923
+        },
+        "ort-coreml": {
+          "median_us": 229.959,
+          "p90_us": 339.80800000000005,
+          "std_us": 72.96162902180662,
+          "samples": 75,
+          "gflops": 8.836914406481155,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 266.36842105263156,
+            "kernel_us": 289.7,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "8055057627823776084_CoreML_8055057627823776084_0@CoreMLExecutionProvider",
+                "us": 289.7
+              }
+            ]
+          },
+          "vs_best": 1.7734581659173112
+        },
+        "native-ref": {
+          "median_us": 546.709,
+          "p90_us": 651.8670000000003,
+          "std_us": 76.96209208605494,
+          "samples": 75,
+          "gflops": 3.7170194747114094,
+          "correct": true,
+          "vs_best": 4.21625394279192
+        },
+        "native-opt": {
+          "median_us": 129.667,
+          "p90_us": 167.0328,
+          "std_us": 36.867275921427485,
+          "samples": 75,
+          "gflops": 15.671898015686335,
+          "correct": true,
+          "vs_best": 1.0
+        }
+      },
+      "analysis": {
+        "fastest": "native-opt",
+        "findings": [
+          "torch is 11.9x slower than native-opt",
+          "ort-cpu is 2.6x slower than native-opt",
+          "native-opt speedup over native-ref: 4.2x"
+        ]
+      }
+    },
+    {
+      "key": "depthwise_conv2d [N1 C960 7x7 k5x5 s[1, 1] d[1, 1] p[2, 2, 2, 2]] float32",
+      "op": "depthwise_conv2d",
+      "dtype": "float32",
+      "quant": "none",
+      "params": {
+        "N": 1,
+        "C": 960,
+        "H": 7,
+        "W": 7,
+        "KH": 5,
+        "KW": 5,
+        "stride": [
+          1,
+          1
+        ],
+        "dilation": [
+          1,
+          1
+        ],
+        "pads": [
+          2,
+          2,
+          2,
+          2
+        ],
+        "bias": true
+      },
+      "flops": 2352000.0,
+      "backends": {
+        "torch": {
+          "median_us": 2394.459,
+          "p90_us": 2657.3836,
+          "std_us": 138.82809483051795,
+          "samples": 75,
+          "gflops": 0.9822678108082035,
+          "correct": true,
+          "vs_best": 24.621686375321335
+        },
+        "ort-cpu": {
+          "median_us": 440.084,
+          "p90_us": 494.4164,
+          "std_us": 30.067120855206603,
+          "samples": 75,
+          "gflops": 5.344434244371529,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 447.63157894736844,
+            "kernel_us": 446.55,
+            "overhead_pct": 0.24162257495590975,
+            "top_kernels": [
+              {
+                "kernel": "Conv@CPUExecutionProvider",
+                "us": 446.55
+              }
+            ]
+          },
+          "vs_best": 4.525285347043702
+        },
+        "ort-coreml": {
+          "median_us": 115.167,
+          "p90_us": 131.75020000000004,
+          "std_us": 10.068125523642532,
+          "samples": 75,
+          "gflops": 20.422516866810806,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 157.73684210526315,
+            "kernel_us": 163.1,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "8055057627823776084_CoreML_8055057627823776084_0@CoreMLExecutionProvider",
+                "us": 163.1
+              }
+            ]
+          },
+          "vs_best": 1.1842365038560412
+        },
+        "native-ref": {
+          "median_us": 499.166,
+          "p90_us": 623.258,
+          "std_us": 111.85998120727417,
+          "samples": 75,
+          "gflops": 4.711859381448256,
+          "correct": true,
+          "vs_best": 5.132812339331619
+        },
+        "native-opt": {
+          "median_us": 97.25,
+          "p90_us": 120.94200000000002,
+          "std_us": 35.96449253028696,
+          "samples": 75,
+          "gflops": 24.18508997429306,
+          "correct": true,
+          "vs_best": 1.0
+        }
+      },
+      "analysis": {
+        "fastest": "native-opt",
+        "findings": [
+          "torch is 24.6x slower than native-opt",
+          "ort-cpu is 4.5x slower than native-opt",
+          "native-opt speedup over native-ref: 5.1x"
+        ]
+      }
+    },
+    {
+      "key": "conv2d [N1 64->64 56x56 k3x3 s[1, 1] d[1, 1] p[1, 1, 1, 1] g1] float32",
+      "op": "conv2d",
+      "dtype": "float32",
+      "quant": "none",
+      "params": {
+        "N": 1,
+        "groups": 1,
+        "cin_per_group": 64,
+        "cout_per_group": 64,
+        "H": 56,
+        "W": 56,
+        "KH": 3,
+        "KW": 3,
+        "stride": [
+          1,
+          1
+        ],
+        "dilation": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "bias": true
+      },
+      "flops": 231211008.0,
+      "backends": {
+        "torch": {
+          "median_us": 701.417,
+          "p90_us": 1625.6086000000003,
+          "std_us": 415.5610909058705,
+          "samples": 75,
+          "gflops": 329.6341662662867,
+          "correct": true,
+          "vs_best": 2.451084335665313
+        },
+        "ort-cpu": {
+          "median_us": 286.166,
+          "p90_us": 330.475,
+          "std_us": 25.103485620797763,
+          "samples": 75,
+          "gflops": 807.9611414353907,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 301.36842105263156,
+            "kernel_us": 302.05,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "NhwcFusedConv@CPUExecutionProvider",
+                "us": 200.9
+              },
+              {
+                "kernel": "Transpose@CPUExecutionProvider",
+                "us": 101.15
+              }
+            ]
+          },
+          "vs_best": 1.0
+        },
+        "ort-coreml": {
+          "median_us": 306.0,
+          "p90_us": 500.4166000000001,
+          "std_us": 140.22602434395313,
+          "samples": 75,
+          "gflops": 755.5915294117647,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 387.2105263157895,
+            "kernel_us": 396.4,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "8055057627823776084_CoreML_8055057627823776084_0@CoreMLExecutionProvider",
+                "us": 396.4
+              }
+            ]
+          },
+          "vs_best": 1.0693094218041277
+        }
+      },
+      "analysis": {
+        "fastest": "ort-cpu",
+        "findings": [
+          "torch is 2.5x slower than ort-cpu"
+        ]
+      }
+    },
+    {
+      "key": "softmax [axis=-1,shape=[12, 128, 128]] float32",
+      "op": "softmax",
+      "dtype": "float32",
+      "quant": "none",
+      "params": {
+        "shape": [
+          12,
+          128,
+          128
+        ],
+        "axis": -1
+      },
+      "flops": 983040.0,
+      "backends": {
+        "torch": {
+          "median_us": 162.25,
+          "p90_us": 277.8252,
+          "std_us": 69.9500665031227,
+          "samples": 75,
+          "gflops": 6.0587981510015405,
+          "correct": true,
+          "vs_best": 2.2905666770195103
+        },
+        "ort-cpu": {
+          "median_us": 70.834,
+          "p90_us": 90.02540000000006,
+          "std_us": 28.104309519394985,
+          "samples": 75,
+          "gflops": 13.878081147471553,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 69.0,
+            "kernel_us": 67.85,
+            "overhead_pct": 1.666666666666675,
+            "top_kernels": [
+              {
+                "kernel": "Softmax@CPUExecutionProvider",
+                "us": 67.85
+              }
+            ]
+          },
+          "vs_best": 1.0
+        },
+        "ort-coreml": {
+          "median_us": 211.208,
+          "p90_us": 357.79960000000005,
+          "std_us": 97.92347161056921,
+          "samples": 75,
+          "gflops": 4.654369152683611,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 244.42105263157896,
+            "kernel_us": 247.15,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "8055057627823776084_CoreML_8055057627823776084_0@CoreMLExecutionProvider",
+                "us": 247.15
+              }
+            ]
+          },
+          "vs_best": 2.981731936640596
+        }
+      },
+      "analysis": {
+        "fastest": "ort-cpu",
+        "findings": [
+          "torch is 2.3x slower than ort-cpu",
+          "ort-coreml is 3.0x slower than ort-cpu"
+        ]
+      }
+    },
+    {
+      "key": "layernorm [axis=1,eps=1e-05,shape=[128, 768]] float32",
+      "op": "layernorm",
+      "dtype": "float32",
+      "quant": "none",
+      "params": {
+        "shape": [
+          128,
+          768
+        ],
+        "axis": 1,
+        "eps": 1e-05
+      },
+      "flops": 786432.0,
+      "backends": {
+        "torch": {
+          "median_us": 27.333,
+          "p90_us": 37.76640000000007,
+          "std_us": 45.42131393231547,
+          "samples": 75,
+          "gflops": 28.77225332016244,
+          "correct": true,
+          "vs_best": 1.0
+        },
+        "ort-cpu": {
+          "median_us": 309.167,
+          "p90_us": 387.2250000000002,
+          "std_us": 46.73734523157353,
+          "samples": 75,
+          "gflops": 2.543712621334101,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 335.42105263157896,
+            "kernel_us": 332.15,
+            "overhead_pct": 0.9752079083634184,
+            "top_kernels": [
+              {
+                "kernel": "LayerNormalization@CPUExecutionProvider",
+                "us": 332.15
+              }
+            ]
+          },
+          "vs_best": 11.31112574543592
+        },
+        "ort-coreml": {
+          "median_us": 120.084,
+          "p90_us": 161.90840000000009,
+          "std_us": 51.729464055485174,
+          "samples": 75,
+          "gflops": 6.549015689017688,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 182.57894736842104,
+            "kernel_us": 186.15,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "8055057627823776084_CoreML_8055057627823776084_0@CoreMLExecutionProvider",
+                "us": 186.15
+              }
+            ]
+          },
+          "vs_best": 4.393370650861597
+        }
+      },
+      "analysis": {
+        "fastest": "torch",
+        "findings": [
+          "ort-cpu is 11.3x slower than torch",
+          "ort-coreml is 4.4x slower than torch"
+        ]
+      }
+    },
+    {
+      "key": "gelu [shape=[128, 3072]] float32",
+      "op": "gelu",
+      "dtype": "float32",
+      "quant": "none",
+      "params": {
+        "shape": [
+          128,
+          3072
+        ]
+      },
+      "flops": 3932160.0,
+      "backends": {
+        "torch": {
+          "median_us": 260.709,
+          "p90_us": 471.44220000000024,
+          "std_us": 102.75694052637331,
+          "samples": 75,
+          "gflops": 15.082563317722057,
+          "correct": true,
+          "vs_best": 1.19820482298709
+        },
+        "ort-cpu": {
+          "median_us": 330.834,
+          "p90_us": 432.8166,
+          "std_us": 88.28007910386025,
+          "samples": 75,
+          "gflops": 11.885598215419213,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 336.8421052631579,
+            "kernel_us": 339.6,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "Gelu@CPUExecutionProvider",
+                "us": 339.6
+              }
+            ]
+          },
+          "vs_best": 1.52049562695615
+        },
+        "ort-coreml": {
+          "median_us": 217.583,
+          "p90_us": 286.1336,
+          "std_us": 89.49228170484027,
+          "samples": 75,
+          "gflops": 18.072000110302735,
+          "correct": true,
+          "ort_profile": {
+            "run_us": 231.0,
+            "kernel_us": 275.9,
+            "overhead_pct": 0.0,
+            "top_kernels": [
+              {
+                "kernel": "16708209620879356014_CoreML_16708209620879356014_0@CoreMLExecutionProvider",
+                "us": 275.9
+              }
+            ]
+          },
+          "vs_best": 1.0
+        }
+      },
+      "analysis": {
+        "fastest": "ort-coreml",
+        "findings": []
+      }
+    }
+  ],
+  "skipped_backends": {
+    "ort-qnn-htp": "QNNExecutionProvider not in onnxruntime 1.31.0 build"
+  }
+}

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "neuralprobe"
+version = "0.1.0"
+description = "AI backend validation, differential fuzzing & operator optimization (PyTorch / ONNX Runtime / QNN / native NEON)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.26",
+  "torch>=2.2",
+  "onnx>=1.16",
+  "onnxruntime>=1.18",
+  "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+neuralprobe = "neuralprobe.cli:main"
+
+[tool.setuptools]
+packages = ["neuralprobe"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+filterwarnings = ["ignore::DeprecationWarning"]

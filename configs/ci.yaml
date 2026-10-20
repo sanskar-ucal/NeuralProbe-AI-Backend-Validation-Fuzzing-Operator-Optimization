@@ -1,0 +1,43 @@
+# Per-PR regression suite: deterministic seed, ~2-4 minutes on a CI runner.
+name: ci
+seed: 20261020
+
+fuzz:
+  cases_per_op: 40
+  ops: [matmul, conv2d, depthwise_conv2d, softmax, layernorm, gelu, relu, add]
+  dtypes: [float32, float16]
+  quant: [none, int8_qdq, int8_qdq_per_channel]
+  edge_prob: 0.5
+  # Unavailable backends (e.g. CoreML on Linux, QNN without a Snapdragon device) are skipped, not failed.
+  backends: [ort-cpu, ort-cpu-noopt, ort-coreml, ort-qnn-htp, native-opt, native-ref]
+  shrink: true
+  max_repros_per_signature: 2
+  time_budget_s: 600
+
+waivers: waivers.yaml
+
+bench:
+  threads: 1
+  warmup: 5
+  iters: 25
+  repeats: 3
+  profile: true
+  backends: [torch, ort-cpu, ort-coreml, ort-qnn-htp, native-ref, native-opt]
+  cases:
+    - {op: matmul, params: {batch: [], M: 64, K: 64, N: 64, b_batched: false}}
+    - {op: matmul, params: {batch: [], M: 256, K: 256, N: 256, b_batched: false}}
+    - {op: matmul, params: {batch: [], M: 1, K: 768, N: 768, b_batched: false}}      # LLM decode GEMV
+    - {op: matmul, params: {batch: [], M: 128, K: 768, N: 768, b_batched: false}}    # BERT-base projection
+    - {op: matmul, params: {batch: [], M: 128, K: 768, N: 768, b_batched: false}, quant: int8_qdq}
+    - {op: depthwise_conv2d, params: {N: 1, C: 32, H: 112, W: 112, KH: 3, KW: 3, stride: [1, 1], dilation: [1, 1], pads: [1, 1, 1, 1], bias: true}}
+    - {op: depthwise_conv2d, params: {N: 1, C: 144, H: 56, W: 56, KH: 3, KW: 3, stride: [2, 2], dilation: [1, 1], pads: [1, 1, 1, 1], bias: true}}
+    - {op: depthwise_conv2d, params: {N: 1, C: 960, H: 7, W: 7, KH: 5, KW: 5, stride: [1, 1], dilation: [1, 1], pads: [2, 2, 2, 2], bias: true}}
+    - {op: conv2d, params: {N: 1, groups: 1, cin_per_group: 64, cout_per_group: 64, H: 56, W: 56, KH: 3, KW: 3, stride: [1, 1], dilation: [1, 1], pads: [1, 1, 1, 1], bias: true}}
+    - {op: softmax, params: {shape: [12, 128, 128], axis: -1}}
+    - {op: layernorm, params: {shape: [128, 768], axis: 1, eps: 1.0e-5}}
+    - {op: gelu, params: {shape: [128, 3072]}}
+
+regression:
+  perf_threshold: 0.15   # >15% slower ...
+  min_delta_us: 5.0      # ... and by more than 5us, to ignore noise on tiny kernels
+  fail_on_perf: true

@@ -1,0 +1,49 @@
+name: nightly-fuzz
+
+on:
+  schedule:
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "Fuzz seed (default: run number)"
+        required: false
+
+jobs:
+  fuzz:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04-arm, ubuntu-24.04, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then pip install torch --index-url https://download.pytorch.org/whl/cpu; fi
+          pip install -e .
+      - run: scripts/build_native.sh build -DNP_BUILD_TESTS=OFF
+      - name: Fuzz with a fresh seed
+        id: fuzz
+        continue-on-error: true
+        run: |
+          SEED="${{ github.event.inputs.seed || github.run_number }}"
+          echo "seed=$SEED" >> "$GITHUB_OUTPUT"
+          python -m neuralprobe fuzz -c configs/nightly.yaml -o artifacts --seed "$SEED"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly-${{ matrix.os }}-seed${{ steps.fuzz.outputs.seed }}
+          path: artifacts/
+      - name: Open issue for new failures
+        if: steps.fuzz.outcome == 'failure' && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create --title "nightly fuzz: new failures on ${{ matrix.os }} (seed ${{ steps.fuzz.outputs.seed }})" \
+            --body-file artifacts/report.md --label fuzz-failure || true
