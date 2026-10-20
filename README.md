@@ -24,17 +24,21 @@ flowchart TB
 
 ## Bugs and precision issues found
 
-These came out of the first CI-sized campaign (320 generated cases, 982 backend executions, ~12 s on an M-series
-Mac with onnxruntime 1.31). Every row is a real upstream behavior, reproduced from an auto-minimized bundle. Each
+NP-001 to NP-004 came out of the first CI-sized campaign (320 generated cases, 982 backend executions, ~12 s on
+an M-series Mac with onnxruntime 1.31). NP-005 to NP-007 surfaced when the same seed ran on CI's Linux x86 and
+arm64 runners: same models, different kernels per CPU. Every row is a real upstream behavior, reproduced from an auto-minimized bundle. Each
 is tracked as a waiver in [`configs/waivers.yaml`](configs/waivers.yaml), so it stays visible in reports without
 failing CI.
 
 | ID | Backend | Finding | Auto-triage result | Minimized repro |
 |---|---|---|---|---|
-| NP-001 | ORT CPU (arm64) | MatMul with a constant (prepacked) weight **drops NaN**: returns `-FLT_MAX` (fp32) / `-inf` (fp16) | disappears with `mlas.disable_kleidiai=1` → KleidiAI micro-kernel clamp | `1x1 @ 1x1` |
+| NP-001 | ORT CPU (macOS arm64) | MatMul with a constant (prepacked) weight **drops NaN**: returns `-FLT_MAX` (fp32) / `-inf` (fp16) | disappears with `mlas.disable_kleidiai=1` → KleidiAI micro-kernel clamp | `1x1 @ 1x1` |
 | NP-002 | ORT CPU | QDQ MatMul with per-channel weights + batched B **crashes at runtime** in `QLinearMatMul` | disappears with graph optimizations off → the QDQ fusion emits a node its kernel can't run | `1x1 @ 1x2`, batched B |
 | NP-003 | ORT CoreML EP | Softmax on a rank-3 tensor with `axis=-3` returns **wrong values** (equivalent `axis=0` is correct) | passes on the CPU EP → EP bug | shape `[1,1,2]` |
 | NP-004 | ORT CoreML EP | fp16 GELU flushes outputs of ~1e-3 to 0 for x < -3 (`1+erf` cancels in fp16) | passes on the CPU EP (which fuses the subgraph into a Gelu kernel) → precision hazard rather than a bug | shape `[1,2,5,25]` |
+| NP-005 | ORT CPU (x86-64, no VNNI) | int8 QDQ Conv/MatMul give wrong values; GitHub's mixed x86 runner pool made it look flaky | disappears with graph optimizations off → fused `vpmaddubsw` U8S8 path saturates int16 pair sums | `1x2 @ 2x1` (one saturating pair) |
+| NP-006 | ORT CPU (Linux arm64) | fp16 **grouped** Conv returns garbage (83.4 vs -4.02) | disappears with `session.disable_prepacking=1` → prepacked fp16 conv path | 3→6 ch, 7x7, groups=3 |
+| NP-007 | ORT CPU (Linux arm64) | fp16 GELU ~1.5x over the error bound: fp16 `Erf` error amplified by `1+erf` cancellation | persists under all toggles | shape `[1,2,9,25]` |
 | WARN | ORT CPU | fp32 LayerNorm error grows with row length: 17 ULP at 17k elements, 38 ULP at 57k, vs ~2 ULP for PyTorch | within tolerance, reported as a precision warning | — |
 
 To replay one: `python artifacts/repros/<bundle>/repro.py`. It needs only numpy and onnxruntime, so it can be
@@ -65,7 +69,9 @@ cross-backend numbers):
 
 \* On Apple silicon, PyTorch (Accelerate) and ORT (KleidiAI) route fp32 GEMM to the AMX/SME matrix coprocessor
 (~1.8 TFLOP/s single-threaded). No pure-NEON kernel can match that, so it isn't a like-for-like comparison. On
-Snapdragon and other cores without SME, NEON is the relevant baseline.
+cores without SME, NEON is the relevant baseline. On the GitHub `ubuntu-24.04-arm` runner (Neoverse-class), the
+NEON GEMM is within 4% of ONNX Runtime and faster than PyTorch: 3.13 ms vs 3.01 ms (ORT) and 3.06 ms (PyTorch) at
+128x768x768, and 678 µs vs 662 µs and 707 µs at 256³.
 
 **Ablation** (`-DNP_FORCE_SCALAR=ON` builds the same blocked algorithms without intrinsics, and lets clang
 auto-vectorize):

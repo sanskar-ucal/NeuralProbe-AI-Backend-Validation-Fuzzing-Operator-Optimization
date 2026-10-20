@@ -2,7 +2,9 @@
 import numpy as np
 import pytest
 
+from neuralprobe.backends import ROOT
 from neuralprobe.case import Case, materialize
+from neuralprobe.config import load_config
 from neuralprobe.repro import shrink
 from neuralprobe.runner import gate, run_fuzz
 
@@ -65,6 +67,8 @@ def test_shrinker_finds_minimal_trigger():
 
 
 def test_clean_backend_passes(cfg, tmp_path):
+    """Unmutated ort-cpu must pass the gate (with the repo's known-issue waivers, exactly as CI applies them)."""
     cfg["fuzz"].update({"ops": ["matmul", "conv2d", "relu", "add"], "dtypes": ["float32"]})
+    cfg["waivers"] = load_config(ROOT / "configs" / "ci.yaml")["waivers"]
     result = run_fuzz(cfg, tmp_path, log=lambda *_: None)
-    assert not [r for r in gate(result) if r["dist"] != "special"]
+    assert not gate(result), [(r["op"], r["quant"], r["dist"], r["detail"][:120]) for r in gate(result)]

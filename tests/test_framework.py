@@ -47,10 +47,12 @@ def test_quantization_roundtrip():
 
 @pytest.mark.parametrize("quant", ["int8_qdq", "int8_qdq_per_channel"])
 def test_qdq_conv_matches_fake_quant_reference(quant):
+    """Our fake-quant oracle must match ONNX QDQ semantics exactly. Uses the unfused graph (ort-cpu-noopt): the
+    fused int8 kernels are ISA-dependent on x86 (U8S8 saturation, waiver NP-005) and are covered by fuzzing."""
     p = {"N": 1, "groups": 1, "cin_per_group": 8, "cout_per_group": 16, "KH": 3, "KW": 3, "stride": [1, 1],
          "dilation": [1, 1], "pads": [1, 1, 1, 1], "bias": False, "H": 12, "W": 12}
     case = Case("conv2d", "float32", quant, "normal", p, 9)
-    status, comparison, _, error, _ = evaluate(case, make_backend("ort-cpu"))
+    status, comparison, _, error, _ = evaluate(case, make_backend("ort-cpu-noopt"))
     assert status == "PASS", (error, comparison and comparison.detail)
     assert comparison.max_ulp <= 1.01  # within one output LSB
 
@@ -91,6 +93,10 @@ def test_waiver_matching():
     assert match_waiver(row, w)
     assert not match_waiver(dict(row, label="axis=-3,shape=[1, 1, 2, 2]"), w)
     assert not match_waiver(dict(row, op="layernorm"), w)
+    scoped = [{"op": ["matmul", "conv2d"], "machine": ["x86_64", "AMD64"], "reason": "x"}]
+    assert match_waiver(dict(row, op="conv2d"), scoped, machine="x86_64")
+    assert not match_waiver(dict(row, op="conv2d"), scoped, machine="aarch64")
+    assert not match_waiver(row, scoped, machine="x86_64")
 
 
 def test_perf_regression_detection():

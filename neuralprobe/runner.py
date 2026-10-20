@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import fnmatch
 import os
+import platform
 import re
 import time
 from pathlib import Path
@@ -33,11 +34,20 @@ def _save_minimized(case: Case, b: Backend, tol_over: dict, repro_dir: Path, out
     row["minimized_label"] = small.spec.label(small.params)
 
 
-def match_waiver(row: dict, waivers: list[dict]) -> dict | None:
-    """Waivers match on glob fields (op, backend, dtype, quant, dist, category) and an optional label_regex."""
+def _glob_any(value, patterns) -> bool:
+    patterns = patterns if isinstance(patterns, list) else [patterns]
+    return any(fnmatch.fnmatch(str(value), str(p)) for p in patterns)
+
+
+def match_waiver(row: dict, waivers: list[dict], machine: str | None = None) -> dict | None:
+    """Waivers match on glob (or list-of-glob) fields: op, backend, dtype, quant, dist, category, machine
+    (platform.machine(), e.g. x86_64 / aarch64 / arm64), plus an optional label_regex."""
+    machine = machine or platform.machine()
     for w in waivers:
         keys = [k for k in ("op", "backend", "dtype", "quant", "dist", "category") if k in w]
-        if not all(fnmatch.fnmatch(str(row.get(k)), str(w[k])) for k in keys):
+        if not all(_glob_any(row.get(k), w[k]) for k in keys):
+            continue
+        if "machine" in w and not _glob_any(machine, w["machine"]):
             continue
         if "label_regex" in w and not re.search(w["label_regex"], row.get("label", "")):
             continue

@@ -1,16 +1,18 @@
 # Known upstream issues found by NeuralProbe. A waived failure is still reported (with repro bundle),
 # but does not fail CI. Keep waivers as narrow as possible so new bugs in the same op are not hidden.
-# Fields (all optional, glob): op, backend, dtype, quant, dist, category; plus label_regex.
+# Fields (all optional; glob or list of globs): op, backend, dtype, quant, dist, category,
+# machine (platform.machine(): x86_64, aarch64 = Linux arm64, arm64 = macOS); plus label_regex.
 waivers:
   - id: NP-001
     op: matmul
     backend: ort-cpu*
     dist: special
     category: nonfinite_mismatch
+    machine: arm64
     reason: >-
-      ORT 1.31 arm64: MatMul with constant (prepacked) B drops NaN -- returns -FLT_MAX (fp32) / -inf (fp16).
-      Auto-triage: disappears with mlas.disable_kleidiai=1 (KleidiAI micro-kernel clamp uses NaN-dropping min/max).
-      Minimized repro: 1x1 @ 1x1.
+      ORT 1.31 macOS arm64 (Apple M-series): MatMul with constant (prepacked) B drops NaN -- returns -FLT_MAX (fp32)
+      / -inf (fp16). Auto-triage: disappears with mlas.disable_kleidiai=1 (KleidiAI micro-kernel clamp uses
+      NaN-dropping min/max). Not reproduced on Linux arm64 (Neoverse). Minimized repro: 1x1 @ 1x1.
 
   - id: NP-002
     op: matmul
@@ -39,5 +41,40 @@ waivers:
     category: numerical_mismatch
     reason: >-
       CoreML EP executes the erf-decomposed GELU entirely in fp16; 1 + erf(x/sqrt2) cancels to 0 for x < ~-3, so
-      outputs of magnitude ~1e-3 flush to 0. PyTorch computes fp16 GELU internally in fp32 and ORT-CPU fuses the
-      subgraph into a Gelu kernel, so both stay accurate. Precision hazard rather than a bug.
+      outputs of magnitude ~1e-3 flush to 0. PyTorch computes fp16 GELU internally in fp32 and stays accurate
+      (as does ORT-CPU on macOS). Precision hazard rather than a bug.
+
+  - id: NP-005
+    op: [matmul, conv2d, depthwise_conv2d]
+    backend: ort-cpu
+    quant: int8_qdq*
+    category: numerical_mismatch
+    machine: [x86_64, AMD64]
+    reason: >-
+      ORT x86-64 U8S8 saturation: the fused QLinearConv/QLinearMatMul int8 kernels use vpmaddubsw on CPUs without
+      AVX512-VNNI/AVX-VNNI, whose int16 pair-sum saturates for uint8 activations x int8 weights (255*127*2 > 32767).
+      Documented ORT limitation (mitigation: reduce_range / U8U8). Auto-triage: passes with graph optimizations
+      disabled (unfused float path). Minimized repro: 1x2 @ 2x1 -- a single saturating pair. Only appears on
+      GitHub runners whose CPU lacks VNNI, so it is runner-dependent.
+
+  - id: NP-006
+    op: conv2d
+    backend: ort-cpu*
+    dtype: float16
+    category: numerical_mismatch
+    machine: aarch64
+    reason: >-
+      ORT 1.31 Linux arm64: fp16 grouped Conv with a prepacked weight returns garbage (e.g. 83.4 vs -4.02).
+      Auto-triage: disappears with session.disable_prepacking=1 -> bug in the prepacked fp16 conv path (also with
+      graph optimizations off). Minimized repro: N1 3->6 3x3, k7x7, stride [2,3], pads 3, groups=3.
+
+  - id: NP-007
+    op: gelu
+    backend: ort-cpu*
+    dtype: float16
+    category: numerical_mismatch
+    machine: aarch64
+    reason: >-
+      ORT 1.31 Linux arm64 runs the erf-decomposed GELU with native fp16 kernels; fp16 Erf error is amplified by the
+      1 + erf(x/sqrt2) cancellation for x < ~-1.5 (max abs error 1.7e-3 vs 1.2e-3 bound, ~1.5x). Persists under all
+      toggles. Precision hazard of fp16 graph semantics (PyTorch computes fp16 GELU in fp32).
