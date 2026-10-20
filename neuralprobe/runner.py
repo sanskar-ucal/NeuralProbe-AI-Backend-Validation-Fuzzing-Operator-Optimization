@@ -134,3 +134,21 @@ def run_fuzz(cfg: dict, out_dir: Path, log=print) -> dict:
 def gate(fuzz_result: dict) -> list[dict]:
     """Rows that should fail CI: unwaived FAILs."""
     return [r for r in fuzz_result["rows"] if r["status"] == "FAIL" and not r.get("waived")]
+
+
+def print_failures(rows: list[dict], log=print, limit: int = 40) -> None:
+    """Prints unwaived failures so CI logs are actionable without downloading the report artifact."""
+    if not rows:
+        return
+    log(f"\nUNWAIVED FAILURES ({len(rows)}):")
+    for r in rows[:limit]:
+        log(f"  - {r['op']} on {r['backend']} [{r['dtype']} {r['quant']} dist={r['dist']}] {r['label']}")
+        log(f"      {r['category']}: {(r.get('detail') or '')[:300]}")
+        if r.get("triage"):
+            log(f"      triage: {r['triage']}")
+        if r.get("minimized_label"):
+            log(f"      minimized: {r['minimized_label']}  ({r.get('minimized_repro')})")
+        elif r.get("repro"):
+            log(f"      repro: {r['repro']}")
+    if len(rows) > limit:
+        log(f"  ... {len(rows) - limit} more in report.md")

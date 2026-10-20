@@ -20,7 +20,7 @@ from .config import load_config
 from .profiler import compare_bench, run_bench
 from .report import perf_sections, write_reports
 from .repro import replay
-from .runner import gate, run_fuzz
+from .runner import gate, print_failures, run_fuzz
 
 
 def _apply_overrides(cfg: dict, args) -> dict:
@@ -76,6 +76,7 @@ def cmd_fuzz(args) -> int:
     fuzz = run_fuzz(cfg, out)
     summary = _summary(cfg, fuzz=fuzz)
     bad = gate(fuzz)
+    print_failures(bad)
     if bad:
         summary["failed"] = True
         summary["fail_reasons"].append(f"{len(bad)} unwaived correctness failure(s)")
@@ -131,6 +132,7 @@ def cmd_regress(args) -> int:
     print("[3/3] report")
     summary = _summary(cfg, fuzz, bench, regressions)
     bad = gate(fuzz)
+    print_failures(bad)
     if bad:
         summary["failed"] = True
         summary["fail_reasons"].append(f"{len(bad)} unwaived correctness failure(s)")
