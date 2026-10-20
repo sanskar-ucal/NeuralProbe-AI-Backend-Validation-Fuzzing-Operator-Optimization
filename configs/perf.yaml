@@ -1,0 +1,27 @@
+# A/B perf gate for the native kernels: base and head are benchmarked back-to-back on the same runner,
+# so only backends whose code changes between commits are measured.
+name: perf
+seed: 1
+fuzz:
+  ops: []
+bench:
+  threads: 1
+  warmup: 10
+  iters: 40
+  repeats: 5
+  profile: false
+  backends: [native-opt]
+  cases:
+    - {op: matmul, params: {batch: [], M: 64, K: 64, N: 64, b_batched: false}}
+    - {op: matmul, params: {batch: [], M: 256, K: 256, N: 256, b_batched: false}}
+    - {op: matmul, params: {batch: [], M: 1, K: 768, N: 768, b_batched: false}}
+    - {op: matmul, params: {batch: [], M: 128, K: 768, N: 768, b_batched: false}}
+    - {op: matmul, params: {batch: [], M: 33, K: 517, N: 129, b_batched: false}}   # ragged tiles
+    - {op: depthwise_conv2d, params: {N: 1, C: 32, H: 112, W: 112, KH: 3, KW: 3, stride: [1, 1], dilation: [1, 1], pads: [1, 1, 1, 1], bias: true}}
+    - {op: depthwise_conv2d, params: {N: 1, C: 144, H: 56, W: 56, KH: 3, KW: 3, stride: [2, 2], dilation: [1, 1], pads: [1, 1, 1, 1], bias: true}}
+    - {op: depthwise_conv2d, params: {N: 1, C: 192, H: 28, W: 28, KH: 3, KW: 3, stride: [1, 1], dilation: [1, 1], pads: [1, 1, 1, 1], bias: true}}
+    - {op: depthwise_conv2d, params: {N: 1, C: 960, H: 7, W: 7, KH: 5, KW: 5, stride: [1, 1], dilation: [1, 1], pads: [2, 2, 2, 2], bias: true}}
+regression:
+  perf_threshold: 0.10
+  min_delta_us: 3.0
+  fail_on_perf: true

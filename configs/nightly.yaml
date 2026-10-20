@@ -1,0 +1,16 @@
+# Nightly exploratory campaign: many more cases, heavier edge-case bias. The workflow passes a fresh
+# --seed each night so new regions of the input space are explored; every failure is reproducible from it.
+name: nightly
+seed: 0
+fuzz:
+  cases_per_op: 400
+  edge_prob: 0.7
+  dtypes: [float32, float16]
+  quant: [none, int8_qdq, int8_qdq_per_channel]
+  backends: [ort-cpu, ort-cpu-noopt, ort-coreml, ort-qnn-htp, native-opt, native-ref]
+  shrink: true
+  max_repros_per_signature: 3
+  time_budget_s: 3000
+waivers: waivers.yaml
+bench:
+  cases: []

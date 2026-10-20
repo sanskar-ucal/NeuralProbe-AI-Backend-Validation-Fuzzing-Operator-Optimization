@@ -1,0 +1,41 @@
+# Snapdragon target (Windows on Snapdragon / Android): ONNX Runtime QNN Execution Provider.
+#   pip install onnxruntime-qnn        (Windows ARM64; ships QnnHtp.dll / QnnCpu.dll)
+#   python -m neuralprobe regress -c configs/qnn.yaml -o artifacts-qnn
+# Override library locations with NEURALPROBE_QNN_HTP_PATH / NEURALPROBE_QNN_CPU_PATH.
+# The HTP is primarily an int8/fp16 accelerator, so this config leans on QDQ-quantized cases; CPU fallback is
+# disabled, so anything the HTP rejects is reported as UNSUPPORTED (coverage gap), not silently run on CPU.
+name: qnn
+seed: 20261020
+fuzz:
+  cases_per_op: 60
+  ops: [matmul, conv2d, depthwise_conv2d, softmax, layernorm, gelu, relu, add]
+  dtypes: [float32, float16]
+  quant: [int8_qdq, int8_qdq_per_channel, none]
+  edge_prob: 0.4
+  backends: [ort-cpu, ort-qnn-cpu, ort-qnn-htp, native-opt]
+  shrink: true
+  max_repros_per_signature: 3
+  time_budget_s: 1800
+tolerances:
+  # HTP fp16 paths accumulate in fp16; widen the float32 bound for cases it runs with fp16 precision enabled.
+  default:
+    float32: {rtol: 1.0e-3, atol: 1.0e-3, k: 8.0}
+waivers: waivers.yaml
+bench:
+  threads: 1
+  warmup: 10
+  iters: 50
+  repeats: 3
+  profile: true
+  backends: [ort-cpu, ort-qnn-htp, native-opt]
+  cases:
+    - {op: matmul, params: {batch: [], M: 128, K: 768, N: 768, b_batched: false}, quant: int8_qdq}
+    - {op: matmul, params: {batch: [], M: 128, K: 768, N: 768, b_batched: false}}
+    - {op: conv2d, params: {N: 1, groups: 1, cin_per_group: 64, cout_per_group: 64, H: 56, W: 56, KH: 3, KW: 3, stride: [1, 1], dilation: [1, 1], pads: [1, 1, 1, 1], bias: false}, quant: int8_qdq_per_channel}
+    - {op: depthwise_conv2d, params: {N: 1, C: 144, H: 56, W: 56, KH: 3, KW: 3, stride: [2, 2], dilation: [1, 1], pads: [1, 1, 1, 1], bias: true}}
+    - {op: softmax, params: {shape: [12, 128, 128], axis: -1}}
+    - {op: layernorm, params: {shape: [128, 768], axis: 1, eps: 1.0e-5}}
+regression:
+  perf_threshold: 0.15
+  min_delta_us: 5.0
+  fail_on_perf: true
